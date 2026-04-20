@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to ECR
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin <your_account>.dkr.ecr.ap-south-1.amazonaws.com
+
+  build:
+    commands:
+      - echo Build Docker image
+      - docker build -t devops-app .
+
+      - docker tag devops-app:latest <your_account>.dkr.ecr.ap-south-1.amazonaws.com/devops-app:latest
+
+  post_build:
+    commands:
+      - echo Push image
+      - docker push <your_account>.dkr.ecr.ap-south-1.amazonaws.com/devops-app:latest
+
+      - printf '[{"name":"app","imageUri":"%s"}]' <your_account>.dkr.ecr.ap-south-1.amazonaws.com/devops-app:latest > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
